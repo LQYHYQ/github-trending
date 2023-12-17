@@ -62,7 +62,7 @@ def request(url):
         header = {
             'User-Agent': 'Mozilla / 5.0(Windows NT 10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 115.0.0.0Safari / 537.36'
         }
-        response = requests.get(url, headers=header, timeout=10)
+        response = requests.get(url, headers=header, timeout=(10,15))
         if response.status_code == 200:
             parse(response.text)
     except requests.RequestException as e:
