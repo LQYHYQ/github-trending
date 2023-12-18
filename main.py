@@ -10,7 +10,6 @@ import json
 import configparser
 import os
 import logging
-from logging.handlers import RotatingFileHandler
 from datetime import datetime
 import pymysql
 
@@ -27,7 +26,7 @@ def loggging_init():
     # 创建一个handler，用于写入日志文件
     # 拼接 log 文件夹的路径
     logfile = os.path.join(current_directory, "all_log.log")
-    fh = logging.handlers.TimedRotatingFileHandler(logfile, encoding="utf-8")  # open的打开模式这里可以进行参考
+    fh = logging.FileHandler(logfile, encoding="utf-8")  # open的打开模式这里可以进行参考
     fh.setLevel(logging.DEBUG)  # 输出到file的log等级的开关
 
     # 定义handler的输出格式（时间，文件，行数，错误级别，错误提示）
@@ -66,6 +65,7 @@ def request(url):
         if response.status_code == 200:
             parse(response.text)
     except requests.RequestException as e:
+        logging.exception(e)
         pushplus("Github Trending请求异常：{}".format(e))
         return None
 
@@ -173,7 +173,8 @@ def save_db(item_list):
 def run():
     try:
         url = 'https://github.com/trending'
-        request(url)
+        if request(url) is not None:
+            pushplus("Github Trending程序执行成功！")
     except Exception as e:
         logging.exception(e)
         pushplus("Github Trending程序执行异常：{}".format(e))
