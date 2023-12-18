@@ -9,7 +9,7 @@ CREATE TABLE `github_trending_daily` (
   `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `name` varchar(255) DEFAULT NULL COMMENT '作者 / 项目名',
   `url` varchar(255) DEFAULT NULL COMMENT '项目地址',
-  `about` varchar(255) DEFAULT NULL COMMENT '项目介绍',
+  `about` varchar(1000) DEFAULT NULL COMMENT '项目介绍',
   `language` varchar(255) DEFAULT NULL COMMENT '项目编程语言',
   `star` int(10) DEFAULT NULL COMMENT '项目star数',
   `fork` int(10) DEFAULT NULL COMMENT '项目fork数',
