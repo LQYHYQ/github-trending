@@ -12,6 +12,7 @@ import os
 import logging
 from datetime import datetime
 import pymysql
+from fake_useragent import UserAgent
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.getcwd(), "config.ini"))
@@ -59,7 +60,7 @@ def pushplus(content):
 def request(url):
     try:
         header = {
-            'User-Agent': 'Mozilla / 5.0(Windows NT 10.0;Win64;x64) AppleWebKit / 537.36(KHTML, likeGecko) Chrome / 115.0.0.0Safari / 537.36'
+            'User-Agent': UserAgent().random
         }
         response = requests.get(url, headers=header, timeout=(10,15))
         if response.status_code == 200:
