@@ -13,6 +13,7 @@ import logging
 from datetime import datetime
 import pymysql
 from fake_useragent import UserAgent
+import time
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.getcwd(), "config.ini"))
@@ -42,7 +43,7 @@ def loggging_init():
 def pushplus(content):
     api_url = "http://www.pushplus.plus/send/"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+        "User-Agent": UserAgent().random,
         "Content-Type": "application/json",
     }
     token = config.get("pushplus", "token")
@@ -58,17 +59,23 @@ def pushplus(content):
 
 
 def request(url):
-    try:
-        header = {
-            'User-Agent': UserAgent().random
-        }
-        response = requests.get(url, headers=header, timeout=(10,15))
-        if response.status_code == 200:
-            parse(response.text)
-    except requests.RequestException as e:
-        logging.exception(e)
-        pushplus("Github Trending请求异常：{}".format(e))
-        return None
+    for retry in range(5):
+        try:
+            header = {
+                'User-Agent': UserAgent().random
+            }
+            response = requests.get(url, headers=header, timeout=(10, 15))
+            if response.status_code == 200:
+                return parse(response.text)
+        except requests.Timeout as e:
+            logging.exception("Github Trending请求或读取超时：{}".format(e))
+            time.sleep(10)
+        except requests.ConnectionError as e:
+            logging.exception("Github Trending连接异常：{}".format(e))
+            time.sleep(10)
+        except requests.RequestException as e:
+            logging.exception("Github Trending请求异常：".format(e))
+            time.sleep(60)
 
 
 def parse(html):
@@ -92,7 +99,7 @@ def parse(html):
                 ",", ""))
         item_dict = {
             'project_name': project_name,
-            'project_url': project_url,
+            'project_url': "https://github.com{}".format(project_url),
             'project_about': project_about,
             'project_programming_language': project_programming_language,
             'project_star': project_star,
@@ -117,7 +124,7 @@ def save_md(item_list):
             f.write("# {} Github Trending \n\n--- \n".format(date_str))
             for item in item_list:
                 project_name = item['project_name']
-                project_url = "https://github.com{}".format(item['project_url'])
+                project_url = item['project_url']
                 project_about = item['project_about']
                 project_programming_language = item['project_programming_language']
                 project_star = item['project_star']
@@ -132,7 +139,6 @@ def save_md(item_list):
                 row += "**Fork**: {}  \n".format(project_fork)
                 row += "--- \n"
                 f.write(row)
-
     except FileNotFoundError:
         logging.exception("无法打开指定的文件!" + file_path)
     except LookupError:
@@ -159,12 +165,12 @@ def save_db(item_list):
         for item in item_list:
             sql = "INSERT INTO github_trending_daily(name,url,about,language,star,fork,date) values(%s,%s,%s,%s,%s,%s,%s)"
             cursor.execute(sql, (
-                item['project_name'], "https://github.com{}".format(item['project_url']), item['project_about'], item['project_programming_language'], item['project_star'], item['project_fork'], date))
+                item['project_name'], item['project_url'], item['project_about'], item['project_programming_language'], item['project_star'], item['project_fork'], date))
         db.commit()
         cursor.close()
     except pymysql.MySQLError as e:
         # 捕获 pymysql 异常
-        logging.error("pymysql error:" + e)
+        logging.error("pymysql error:", e)
     finally:
         # 确保关闭连接，无论是否发生异常
         if db:
