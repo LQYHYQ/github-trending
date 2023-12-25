@@ -20,7 +20,7 @@ config.read(os.path.join(os.getcwd(), "config.ini"))
 
 
 # 初始化日志
-def loggging_init():
+def logging_init():
     # 创建一个logger
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)  # Log等级总开关  此时是INFO
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     current_directory = os.path.dirname(os.path.abspath(__file__))
 
     # 初始化日志
-    loggging_init()
+    logging_init()
 
     # 执行主程序
     run()
