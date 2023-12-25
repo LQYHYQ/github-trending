@@ -108,6 +108,7 @@ def parse(html):
         project_list.append(item_dict)
     save_md(project_list)
     save_db(project_list)
+    return project_list
 
 
 # 保存markdown文件
