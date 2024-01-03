@@ -59,7 +59,7 @@ def pushplus(content):
 
 
 def request(url):
-    for retry in range(5):
+    for retry in range(10):
         try:
             header = {
                 'User-Agent': UserAgent().random
@@ -76,6 +76,7 @@ def request(url):
         except requests.RequestException as e:
             logging.exception("Github Trending请求异常：".format(e))
             time.sleep(60)
+    pushplus("Github Trending程序重试次数过多，请手动重试！")
 
 
 def parse(html):
