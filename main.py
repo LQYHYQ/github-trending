@@ -58,27 +58,32 @@ def pushplus(content):
     requests.post(api_url, headers=headers, data=body)
 
 
+# 请求
 def request(url):
-    for retry in range(10):
-        try:
-            header = {
-                'User-Agent': UserAgent().random
-            }
-            response = requests.get(url, headers=header, timeout=(10, 15))
-            if response.status_code == 200:
-                return parse(response.text)
-        except requests.Timeout as e:
-            logging.exception("Github Trending请求或读取超时：{}".format(e))
-            time.sleep(10)
-        except requests.ConnectionError as e:
-            logging.exception("Github Trending连接异常：{}".format(e))
-            time.sleep(10)
-        except requests.RequestException as e:
-            logging.exception("Github Trending请求异常：".format(e))
-            time.sleep(60)
+    for retry1 in range(10):
+        for retry2 in range(10):
+            try:
+                header = {
+                    'User-Agent': UserAgent().random
+                }
+                response = requests.get(url, headers=header, timeout=(10, 15))
+                if response.status_code == 200:
+                    return parse(response.text)
+            except requests.Timeout as e:
+                logging.exception("Github Trending请求或读取超时：{}".format(e))
+                time.sleep(10)
+            except requests.ConnectionError as e:
+                logging.exception("Github Trending连接异常：{}".format(e))
+                time.sleep(10)
+            except requests.RequestException as e:
+                logging.exception("Github Trending请求异常：".format(e))
+                time.sleep(60)
+        # 每请求10次异常后，休眠10分钟后继续请求
+        time.sleep(600)
     pushplus("Github Trending程序重试次数过多，请手动重试！")
 
 
+# 解析
 def parse(html):
     soup = BeautifulSoup(html, 'lxml')
     article_list = soup.findAll("article", attrs={'class': 'Box-row'})
